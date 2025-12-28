@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Excel Mapping Wizard</title>
+</head>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.7/js/bootstrap.min.js"></script>
+
+<body>
+
+<h2>Excel Mapping Wizard</h2>
+<hr>
+
+
+
+<label><b>Start section</b></label>
+<input type="text" id="section_name" placeholder="enter section name">
+<button onclick="start_section()">Start section</button>
+<br><br>
+
+<label><b>from</b></label>
+<input type="text" id="from_keyword" placeholder="Enter FROM keyword">
+<input type="checkbox" id="from_exact_match">
+<label>(including spaces)</label>
+<br><br>
+
+<label><b>skip rows</b></label>
+<input type="number" id="skip_rows" value="0" size="6">
+<label><b>Columns</b></label>
+<input type="number" id="skip_cols" value="0" size="6">
+<br><br>
+
+<label><b>extract_upto rows</b></label>
+<input type="number" id="until_rows" value="0" size="6">
+<label><b>Columns</b></label>
+<input type="number" id="until_cols" value="0" size="6">
+<label><b>until</b></label>
+<input type="text" id="until_keyword">
+<input type="checkbox" id="until_exact_match">
+<label>(including spaces)</label>
+<br><br>
+
+<button onclick="start_section()">ADD Section</button>
+<button onclick="end_section()">End section</button>
+
+<br><br>
+<textarea id="extraction_template" rows="15" cols="100"></textarea>
+
+<script>
+var outputJSON = {
+    group_name: "",
+    sections: [],
+    end_group: {}
+};
+
+function start_section() {
+    const section = {
+        section_name: document.getElementById("section_name").value.trim(),
+        data: {
+            from_keyword: document.getElementById("from_keyword").value.trim(),
+            including_spaces1: document.getElementById("from_exact_match").checked ? "1" : "0",
+            skip_rows: Number(document.getElementById("skip_rows").value),
+            skip_cols: Number(document.getElementById("skip_cols").value)
+        }
+    };
+    outputJSON.sections.push(section);
+    document.getElementById("extraction_template").value =
+        JSON.stringify(outputJSON, null, 4);
+}
+
+function createJSON() {
+    const last = outputJSON.sections[outputJSON.sections.length - 1];
+    last.data.until_rows = Number(document.getElementById("until_rows").value);
+    last.data.until_columns = Number(document.getElementById("until_cols").value);
+    last.data.until_keyword = document.getElementById("until_keyword").value.trim();
+    last.data.including_spaces2 =
+        document.getElementById("until_exact_match").checked ? "1" : "0";
+
+    document.getElementById("extraction_template").value =
+        JSON.stringify(outputJSON, null, 4);
+}
+
+function end_section() {
+    const last = outputJSON.sections[outputJSON.sections.length - 1];
+    last.end_section = {
+        extract_upto_rows: Number(document.getElementById("until_rows").value),
+        extract_upto_columns: Number(document.getElementById("until_cols").value),
+        until_keyword: document.getElementById("until_keyword").value.trim(),
+        including_spaces:
+            document.getElementById("until_exact_match").checked ? "1" : "0"
+    };
+
+    document.getElementById("extraction_template").value =
+        JSON.stringify(outputJSON, null, 4);
+}
+</script>
+
+<hr>
+
+
+
+<h3>Group Configuration</h3>
+
+<label><b>group</b></label>
+<input type="text" id="group_name">
+<button onclick="start_group()">Start Group</button>
+<br><br>
+
+<label><b>Section Name</b></label>
+<input type="text" id="group_section_name">
+<button onclick="insert_section()">insert section</button>
+
+<br><br>
+<textarea id="group_template" rows="15" cols="100"></textarea>
+
+<br><br>
+
+<label><b>END group rows</b></label>
+<input type="number" id="end_rows" value="0">
+<label><b>Columns</b></label>
+<input type="number" id="end_cols" value="0">
+<label><b>end</b></label>
+<input type="text" id="end_group_keyword">
+<input type="checkbox" id="end_exact_match">
+<label>(including spaces)</label>
+
+<br><br>
+<button onclick="add_group()">ADD GROUP</button>
+
+<script>
+var groupJSON = {
+    group_name: "",
+    sections: [],
+    end_group: {}
+};
+
+function start_group() {
+    groupJSON.group_name =
+        document.getElementById("group_name").value.trim();
+
+    document.getElementById("group_template").value =
+        JSON.stringify(groupJSON, null, 4);
+}
+
+function insert_section() {
+    const sec = document.getElementById("group_section_name").value.trim();
+    if (!sec) return;
+
+    groupJSON.sections.push({ section_name: sec });
+
+    document.getElementById("group_template").value =
+        JSON.stringify(groupJSON, null, 4);
+}
+
+function add_group() {
+    groupJSON.end_group = {
+        rows: Number(document.getElementById("end_rows").value),
+        columns: Number(document.getElementById("end_cols").value),
+        end_keyword: document.getElementById("end_group_keyword").value.trim(),
+        including_spaces:
+            document.getElementById("end_exact_match").checked ? "1" : "0"
+    };
+
+    document.getElementById("group_template").value =
+        JSON.stringify(groupJSON, null, 4);
+}
+</script>
+
+</body>
+</html>
